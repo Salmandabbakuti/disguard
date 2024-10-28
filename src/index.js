@@ -483,7 +483,7 @@ app.post("/verify", async (req, res) => {
     } else {
       logger.info(`${member.user.tag} verified but does not satisfy rules set on server: ${guild.name}`);
       startHereChannel.send(
-        `Hey <@${memberId}>, your wallet address ${truncatedAddress} has been verified. but, you do not have the required balance of tokens in your wallet. Please make sure you have at least ${minimumBalance} tokens of the token at address \`${tokenAddress}\` in your wallet.`
+        `Hey <@${memberId}>, your wallet address ${truncatedAddress} has been verified. but, you do not have the required balance of tokens in your wallet. Please make sure you have at least ${minimumBalance} tokens of the token at address \`${tokenAddress}\` on \`${chain?.name}(${chain?.chainId})\` chain in your wallet.`
       );
     }
     return res.status(200).json({ code: "ok", message: "Success" });

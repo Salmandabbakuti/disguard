@@ -14,15 +14,15 @@ DisGuard facilitates secure and gated exclusive access to server channels for us
 
 #### For Server Admins
 
-1. Install the DisGuard bot on your Discord server. You can use the following link to add the bot to your server. [Add Bot to Server](https://discord.com/oauth2/authorize?client_id=1248189350177669150)
+1. Install the DisGuard bot on your Discord server. You can use the following link to add the bot to your server. [Add Bot to Server](https://discord.com/oauth2/authorize?client_id=1300440657931800598)
 
-![Screen1s-installation](https://github.com/user-attachments/assets/d7c016c1-55cb-4534-ba63-980b5b091314)
+![Screen1s-installation](https://github.com/user-attachments/assets/831df9fd-2394-4a11-a8b5-32e4438677db)
 
 > If the bot doesn't have all the permissions listed above in image, it will not work as expected. Make sure to give all the permissions to the bot.
 
 2. Move the bot to the top of the role hierarchy in your server. This is required for the bot to assign roles to users. Settings -> Roles -> Drag the bot role to the top.
 
-![Screen6-role-hierarchy](https://github.com/user-attachments/assets/c23d2fd0-01dc-42a5-970f-83a6b01bb382)
+![Screen6-role-hierarchy](https://github.com/user-attachments/assets/921c5622-2828-4bfc-a01e-7ea1c80c96a0)
 
 3. Set up the server config(i.e token address, required balance, role to assign) using the command `/set-serverconfig` in the `#⁠start-here` channel on the server.
 
