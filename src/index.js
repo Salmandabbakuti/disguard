@@ -461,7 +461,9 @@ async function sendVerifyCommandReply(interaction, serverConfig, jwtToken) {
   const verifyWithWalletButton = new ButtonBuilder()
     .setLabel("Verify with Wallet")
     .setStyle(ButtonStyle.Link)
-    .setURL(`${APP_URL}/verify?token=${jwtToken}`);
+    .setURL(
+      `${APP_URL}/verify?token_address=${tokenAddress}&chain_id=${chain?.chainId}&auth_token=${jwtToken}`
+    );
 
   const tokenExplorerButton = new ButtonBuilder()
     .setLabel("View Token on Explorer")
