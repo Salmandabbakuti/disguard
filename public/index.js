@@ -1,12 +1,12 @@
 import { ethers } from "https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.min.js";
 
-const authToken = new URL(window.location.href).searchParams.get("auth_token");
-const chainId = new URL(window.location.href).searchParams.get("chain_id");
-const tokenAddress = new URL(window.location.href).searchParams.get(
-  "token_address"
-);
+const { searchParams } = new URL(window.location.href);
+const authToken = searchParams.get("auth_token");
+const chainId = searchParams.get("chain_id");
+const tokenAddress = searchParams.get("token_address");
+// console.log("query params:", { authToken, chainId, tokenAddress });
+
 const logDiv = document.getElementById("log");
-console.log("query params:", { authToken, chainId, tokenAddress });
 const verifyButton = document.getElementById("verify-btn");
 verifyButton.addEventListener("click", handleVerify, false);
 
@@ -60,22 +60,17 @@ async function verify() {
       body: JSON.stringify(data)
     });
 
-    if (response.ok) {
-      logDiv.style.color = "green";
-      logDiv.innerHTML =
-        "✔ Verification successful! You can now close this tab and return to Discord.";
-      return;
-    }
-
     const result = await response.json();
 
-    if (result.code === "ok" && result.message === "Success") {
+    if (response.ok && result.code === "ok" && result.message === "Success") {
       logDiv.style.color = "green";
       logDiv.innerHTML =
         "✔ Verification successful! You can now close this tab and return to Discord.";
     } else {
       logDiv.style.color = "red";
-      logDiv.innerHTML = `⮾ Verification failed! ${result.message}`;
+      logDiv.innerHTML = `⮾ Verification failed! ${
+        result.message || "Unknown error"
+      }`;
     }
   } catch (err) {
     console.error("Failed to verify wallet:", err);
