@@ -24,7 +24,7 @@ DisGuard facilitates secure and gated exclusive access to server channels for us
 
 ![Screen6-role-hierarchy](https://github.com/user-attachments/assets/921c5622-2828-4bfc-a01e-7ea1c80c96a0)
 
-3. Set up the server config(i.e token address, required balance, role to assign) using the command `/set-serverconfig` in the `#⁠start-here` channel on the server.
+3. Set up the server config(i.e evm chain public rpc url, token address, required balance, role to assign) using the command `/set-serverconfig` in the `#⁠start-here` channel on the server.
 
 #### For Server Members
 
