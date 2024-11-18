@@ -19,6 +19,7 @@ model ServerConfig {
   startChannelId String
   webhookUrl     String   @default("")
   roleId         String
+  rpcUrl         String
   tokenAddress   String
   minimumBalance Float
   createdAt      DateTime @default(now())

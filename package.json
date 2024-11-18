@@ -1,7 +1,7 @@
 {
-  "name": "xenea-discord-bot-server",
-  "version": "1.3.0",
-  "description": "Xenea Discord bot server",
+  "name": "disguard-server",
+  "version": "1.4.0",
+  "description": "DisGuard Server",
   "private": true,
   "scripts": {
     "dev": "nodemon -x node --inspect src/index.js --ext js",

@@ -1,31 +1,41 @@
 const { REST, Routes } = require("discord.js");
 const fetch = require("node-fetch");
-const { createLogger, format, transports } = require('winston');
-const { DISCORD_BOT_TOKEN, DISCORD_BOT_APPLICATION_ID, LOG_LEVEL } = require("./config.js");
+const { createLogger, format, transports } = require("winston");
+const {
+  DISCORD_BOT_TOKEN,
+  DISCORD_BOT_APPLICATION_ID,
+  LOG_LEVEL
+} = require("./config.js");
+
+// Construct and prepare an instance of the Discord REST module
+const rest = new REST().setToken(DISCORD_BOT_TOKEN);
 
 const { combine, timestamp, printf, colorize, errors } = format;
 
 // Log format
 const logFormat = printf(({ level, message, timestamp, ...meta }) => {
-  const extraArgsArr = meta[Symbol.for('splat')];
-  const extraArgs = extraArgsArr?.length ? extraArgsArr.join(" ") : "";
-  return `${timestamp} [${level}]: ${message} ${extraArgs}`;
+  const extraArgsArr = meta[Symbol.for("splat")];
+  const extraArgs = extraArgsArr
+    ?.map((arg) => (typeof arg === "object" ? JSON.stringify(arg) : arg)) // Handle objects and other types
+    .join(" ");
+  return `${timestamp} [${level}]: ${message} ${extraArgs || ""}`;
 });
 
 // Logger configuration
 const logger = createLogger({
-  level: LOG_LEVEL || 'info',
+  level: LOG_LEVEL || "info",
   format: combine(
     errors({ stack: true }),
     colorize(),
     timestamp({
-      format: 'MMM D YYYY hh:mm:ss A'
+      format: "MMM D YYYY hh:mm:ss A"
     }),
     logFormat
   ),
   transports: [new transports.Console()]
 });
 
+// Guild commands to deploy
 const commands = [
   {
     name: "ping",
@@ -36,17 +46,22 @@ const commands = [
   },
   {
     name: "verify",
-    description:
-      "Verify your wallet to access gated channels",
+    description: "Verify your wallet to access gated channels"
   },
   {
     name: "get-serverconfig",
-    description: "Get server settings for verification/gating",
+    description: "Get server settings for verification/gating"
   },
   {
     name: "set-serverconfig",
     description: "Configure server settings for verification/gating by admin",
     options: [
+      {
+        name: "rpcurl",
+        description: "RPC URL of the blockchain network",
+        type: 3,
+        required: true
+      },
       {
         name: "tokenaddress",
         description: "Contract address of ERC20/721 token for gating access",
@@ -73,37 +88,41 @@ const commands = [
       },
       {
         name: "webhookurl",
-        description: "Discord channel Webhook URL to post critical messages to server admins",
+        description:
+          "Discord channel Webhook URL to post critical messages to server admins",
         type: 3,
         required: false
       }
     ]
   }
 ];
-// Construct and prepare an instance of the REST module
-const rest = new REST().setToken(DISCORD_BOT_TOKEN);
 
-const deployCommands = async (guildId) => {
+// Deploys the cmmands to given guild
+const deployCommands = (guildId) => {
   logger.info(
     `Started deploying ${commands.length} application (/) commands on guild ${guildId}.`
   );
-  try {
-    // The put method is used to fully refresh all commands in the guild with the current set
-    const data = await rest.put(
-      Routes.applicationGuildCommands(DISCORD_BOT_APPLICATION_ID, guildId),
-      { body: commands }
+  // The put method is used to fully refresh all commands in the guild with the current set
+  rest
+    .put(Routes.applicationGuildCommands(DISCORD_BOT_APPLICATION_ID, guildId), {
+      body: commands
+    })
+    .then((res) =>
+      logger.info(
+        `Successfully deployed ${res.length} application (/) commands.`
+      )
+    )
+    .catch((err) =>
+      logger.error(`Failed to deploy application (/) commands: ${err.message}`)
     );
-
-    logger.info(
-      `Successfully deployed ${data.length} application (/) commands.`
-    );
-  } catch (error) {
-    // And of course, make sure you catch and log any errors!
-    logger.error("Error while deploying application (/) commands:", guildId, error);
-  }
 };
 
+// Posts data to the provided webhook URL if provided
 const postDataToWebhook = (webhookUrl, data) => {
+  if (!webhookUrl)
+    return logger.warn(
+      "Webhook URL is not provided. Skipping posting data to webhook."
+    );
   fetch(webhookUrl, {
     method: "POST",
     headers: {
@@ -113,7 +132,9 @@ const postDataToWebhook = (webhookUrl, data) => {
   })
     .then((res) => {
       if (!res.ok) {
-        logger.error(`Failed to post data to webhook: ${res.status} - ${res.statusText}`);
+        logger.error(
+          `Failed to post data to webhook: ${res.status} - ${res.statusText}`
+        );
         return;
       }
       logger.info("Data posted to webhook successfully");

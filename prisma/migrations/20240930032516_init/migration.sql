@@ -5,6 +5,7 @@ CREATE TABLE "ServerConfig" (
     "startChannelId" TEXT NOT NULL,
     "webhookUrl" TEXT NOT NULL DEFAULT '',
     "roleId" TEXT NOT NULL,
+    "rpcUrl" TEXT NOT NULL,
     "tokenAddress" TEXT NOT NULL,
     "minimumBalance" DOUBLE PRECISION NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
