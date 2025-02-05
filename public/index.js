@@ -4,7 +4,6 @@ const { searchParams } = new URL(window.location.href);
 const authToken = searchParams.get("auth_token");
 const chainId = searchParams.get("chain_id");
 const tokenAddress = searchParams.get("token_address");
-// console.log("query params:", { authToken, chainId, tokenAddress });
 
 const logDiv = document.getElementById("log");
 const verifyButton = document.getElementById("verify-btn");
