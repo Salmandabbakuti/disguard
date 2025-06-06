@@ -22,10 +22,5 @@ yarn.lock
 # information for Eclipse / Flash Builder.
 .DS_Store
 
-#Hardhat files
-cache
-artifacts/
-coverage/
-coverage.json
-typechain/
-typechain-types/
+# Prisma generated files
+generated/
