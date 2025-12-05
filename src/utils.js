@@ -5,7 +5,7 @@ const {
   DISCORD_BOT_TOKEN,
   DISCORD_BOT_APPLICATION_ID,
   LOG_LEVEL
-} = require("./config.js");
+} = require("./config");
 
 // Construct and prepare an instance of the Discord REST module
 const rest = new REST().setToken(DISCORD_BOT_TOKEN);
