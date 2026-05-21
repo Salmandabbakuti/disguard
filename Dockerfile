@@ -1,10 +1,10 @@
 # syntax = docker/dockerfile:1
 
 # Adjust NODE_VERSION as desired
-ARG NODE_VERSION=20.9.0
+ARG NODE_VERSION=22.11.0
 FROM node:${NODE_VERSION}-slim as base
 
-LABEL fly_launch_runtime="Node.js/Prisma"
+LABEL gcr_launch_runtime="Node.js/Prisma"
 
 # Node.js/Prisma app lives here
 WORKDIR /app
@@ -21,15 +21,15 @@ RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y build-essential node-gyp openssl pkg-config python-is-python3
 
 # Install node modules
-COPY --link package.json ./
+COPY package.json ./
 RUN npm i
 
 # Generate Prisma Client
-COPY --link prisma .
+COPY prisma .
 RUN npx prisma generate
 
 # Copy application code
-COPY --link . .
+COPY . .
 
 
 # Final stage for app image
