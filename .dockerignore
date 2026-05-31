@@ -8,6 +8,7 @@ bin-release/
 # Other files and folders
 
 .settings/
+.git/
 node_modules/
 package-lock.json
 yarn.lock
@@ -27,11 +28,3 @@ _.apk
 # information for Eclipse / Flash Builder.
 
 .DS_Store
-
-#Hardhat files
-cache
-artifacts/
-coverage/
-coverage.json
-typechain/
-typechain-types/
