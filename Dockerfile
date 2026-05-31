@@ -1,7 +1,7 @@
 # syntax = docker/dockerfile:1
 
 # Adjust NODE_VERSION as desired
-ARG NODE_VERSION=22.11.0
+ARG NODE_VERSION=24.12.0
 FROM node:${NODE_VERSION}-slim as base
 
 LABEL gcr_launch_runtime="Node.js/Prisma"
@@ -15,10 +15,6 @@ ENV NODE_ENV="production"
 
 # Throw-away build stage to reduce size of final image
 FROM base as build
-
-# Install packages needed to build node modules
-RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential node-gyp openssl pkg-config python-is-python3
 
 # Install node modules
 COPY package.json ./
@@ -34,11 +30,6 @@ COPY . .
 
 # Final stage for app image
 FROM base
-
-# Install packages needed for deployment
-RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y openssl && \
-    rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Copy built application
 COPY --from=build /app /app
