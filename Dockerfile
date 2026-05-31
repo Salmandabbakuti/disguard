@@ -16,8 +16,9 @@ RUN npx prisma generate
 # Remove dev dependencies
 RUN npm prune --omit=dev
 
-# Copy the rest of the application code
-COPY . .
+# Copy application code
+COPY src ./src
+COPY public ./public
 
 # run as non-root user
 USER node
