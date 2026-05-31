@@ -1,28 +1,39 @@
-ARG NODE_VERSION=24.12.0
-FROM node:${NODE_VERSION}-slim
+# syntax = docker/dockerfile:1
+
+# Adjust NODE_VERSION as desired
+ARG NODE_VERSION=22.11.0
+FROM node:${NODE_VERSION}-slim as base
 
 LABEL gcr_launch_runtime="Node.js/Prisma"
 
+# Node.js/Prisma app lives here
 WORKDIR /app
 
-# Install all dependencies
-COPY package*.json ./
-RUN npm ci
+# Set production environment
+ENV NODE_ENV="production"
+
+
+# Throw-away build stage to reduce size of final image
+FROM base as build
+
+# Install node modules
+COPY package.json ./
+RUN npm i
 
 # Generate Prisma Client
-COPY prisma ./prisma
+COPY prisma .
 RUN npx prisma generate
 
-# Remove dev dependencies
-RUN npm prune --omit=dev
-
 # Copy application code
-COPY src ./src
-COPY public ./public
+COPY . .
 
-# run as non-root user
-USER node
 
+# Final stage for app image
+FROM base
+
+# Copy built application
+COPY --from=build /app /app
+
+# Start the server by default, this can be overwritten at runtime
 EXPOSE 3000
-
-CMD ["npm", "start"]
+CMD [ "npm", "start" ]
