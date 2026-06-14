@@ -10,8 +10,7 @@ const prisma = new PrismaClient({
   log: ["warn", "error"]
 });
 
-prisma
-  .$connect()
+prisma.$executeRaw`SELECT 1`
   .then(() => logger.info("Database has been connected"))
   .catch((err) => logger.error("Unable to connect database", err));
 
