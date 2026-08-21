@@ -66,7 +66,7 @@ DisGuard facilitates secure and gated exclusive access to server channels for us
 
 6. Install the dependencies using `npm install`.
 
-7. Sync the local schema to database by running `npx prisma db push` in the root directory
+7. Sync the local schema to database by running `npx prisma@next db update`, `npx prisma@next contract emit`, `npx prisma@next db sign` in the root directory
 
 8. Run the bot using `npm start`.
 
