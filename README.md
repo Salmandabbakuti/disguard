@@ -89,6 +89,10 @@ If you encounter any issues with the bot, please do the following:
 
 ## Change Log
 
+### v1.5.0
+
+- Migrating from Prisma 7 to Prisma 8
+
 ### v1.4.0
 
 - Added support for any chain ERC20/721 tokens and NFTs by configurable chain RPC URL
