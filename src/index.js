@@ -3,15 +3,18 @@ const {
   ButtonBuilder,
   ActionRowBuilder,
   ButtonStyle,
-  MessageFlags
+  MessageFlags,
+  ChannelType
 } = require("discord.js");
-const {
-  isAddress,
-  JsonRpcProvider
-} = require("ethers");
+const { isAddress, JsonRpcProvider } = require("ethers");
 const jwt = require("jsonwebtoken");
 const db = require("./prisma/db");
-const { client, deployCommands, logger, postDataToWebhook } = require("./utils");
+const {
+  client,
+  deployCommands,
+  logger,
+  postDataToWebhook
+} = require("./utils");
 const app = require("./app");
 
 const { APP_URL, JWT_SECRET } = require("./config");
@@ -72,7 +75,8 @@ client.on(Events.GuildMemberRemove, (member) => {
 });
 
 client.on(Events.MessageCreate, async (msg) => {
-  if (msg.author.bot || msg.system || msg.channel.type === "DM") return;
+  if (msg.author.bot || msg.system || msg.channel.type === ChannelType.DM)
+    return;
   logger.info(
     `Message received in ${msg.guild.name} from ${msg.author.tag}: ${msg.content}`
   );
@@ -148,24 +152,29 @@ async function handleSetServerConfig(interaction) {
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
   if (!isServerOwner(interaction)) {
-    return sendEphemeralReply(
-      interaction,
-      "You are not authorized to configure the server."
-    );
+    return interaction.editReply({
+      content: "You are not authorized to configure the server.",
+      flags: MessageFlags.Ephemeral
+    });
   }
 
   if (!isAddress(tokenAddress)) {
-    return sendEphemeralReply(interaction, "Invalid token address");
+    return interaction.editReply({
+      content:
+        "Invalid token address. Please provide a valid Ethereum address.",
+      flags: MessageFlags.Ephemeral
+    });
   }
 
   if (
     webhookUrl &&
     !webhookUrl.startsWith("https://discord.com/api/webhooks/")
   ) {
-    return sendEphemeralReply(
-      interaction,
-      "Invalid discord webhook URL. It should start with `https://discord.com/api/webhooks/`"
-    );
+    return interaction.editReply({
+      content:
+        "Invalid discord webhook URL. It should start with `https://discord.com/api/webhooks/`",
+      flags: MessageFlags.Ephemeral
+    });
   }
 
   const serverConfig = {
@@ -198,10 +207,10 @@ async function handleSetServerConfig(interaction) {
     });
   } catch (err) {
     logger.error("Failed to save server config", err);
-    sendEphemeralReply(
-      interaction,
-      "Failed to save server config. Please try again later."
-    );
+    await interaction.editReply({
+      content: "Failed to save server config. Please try again later.",
+      flags: MessageFlags.Ephemeral
+    });
     postDataToWebhook(serverConfig?.webhookUrl, {
       content: `DisGuard - Attention Required: Internal Server Error while setting server config: ${err}`
     });
@@ -216,11 +225,13 @@ async function handleGetServerConfig(interaction) {
   }).first();
 
   if (!serverConfig) {
-    return sendEphemeralReply(
-      interaction,
-      "Server not configured. Ask server admin to configure the server with `/set-serverconfig` command"
-    );
+    return interaction.editReply({
+      content:
+        "Server not configured. Ask server admin to configure the server with `/set-serverconfig` command",
+      flags: MessageFlags.Ephemeral
+    });
   }
+
   try {
     const isOwner = isServerOwner(interaction);
     const serverConfigSettings = await getServerConfigSettings(
@@ -237,10 +248,10 @@ async function handleGetServerConfig(interaction) {
     });
   } catch (err) {
     logger.error("Failed to get server config", err);
-    sendEphemeralReply(
-      interaction,
-      "Failed to get server config. Please try again later."
-    );
+    await interaction.editReply({
+      content: "Failed to get server config. Please try again later.",
+      flags: MessageFlags.Ephemeral
+    });
     // send error message to webhook if available
     postDataToWebhook(serverConfig?.webhookUrl, {
       content: `DisGuard - Attention Required: Internal Server Error while getting server config: ${err}`
@@ -255,10 +266,11 @@ async function handleVerifyCommand(interaction) {
     guildId: interaction.guildId
   }).first();
   if (!serverConfig) {
-    return sendEphemeralReply(
-      interaction,
-      "Server not configured. Ask server admin to configure the server with `/set-serverconfig` command"
-    );
+    return interaction.editReply({
+      content:
+        "Server not configured. Ask server admin to configure the server with `/set-serverconfig` command",
+      flags: MessageFlags.Ephemeral
+    });
   }
 
   try {
@@ -274,10 +286,10 @@ async function handleVerifyCommand(interaction) {
     await sendVerifyCommandReply(interaction, serverConfig, jwtToken);
   } catch (err) {
     logger.error("Failed to handle verify command", err);
-    sendEphemeralReply(
-      interaction,
-      "Failed to send verification request. Please try again later."
-    );
+    await interaction.editReply({
+      content: "Failed to send verification request. Please try again later.",
+      flags: MessageFlags.Ephemeral
+    });
     // send error message to webhook if available
     postDataToWebhook(serverConfig?.webhookUrl, {
       content: `DisGuard - Attention Required: Internal Server Error while handling verify command: ${err}`
@@ -299,13 +311,6 @@ function getConfigOptions(interaction) {
 
 function isServerOwner(interaction) {
   return interaction.member.user.id === interaction.guild.ownerId;
-}
-
-function sendEphemeralReply(interaction, message) {
-  return interaction.editReply({
-    content: message,
-    flags: MessageFlags.Ephemeral
-  });
 }
 
 async function saveServerConfig(guildId, serverConfig) {
