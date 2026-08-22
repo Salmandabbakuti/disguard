@@ -37,7 +37,9 @@ const logFormat = printf(({ level, message, timestamp, ...meta }) => {
   const extraArgs = extraArgsArr
     ?.map((arg) => (typeof arg === "object" ? JSON.stringify(arg) : arg)) // Handle objects and other types
     .join(" ");
-  return `${timestamp} [${level}]: ${message} ${extraArgs || ""}`;
+  // little tweak to hide timestamp in prod envs
+  // since, prod envs show timestamp by default in their logs, so no need to show it again in the log message
+  return `${process.env.LOG_LEVEL == "silly" ? timestamp : ""} [${level}]: ${message} ${extraArgs || ""}`;
 });
 
 // Logger configuration
