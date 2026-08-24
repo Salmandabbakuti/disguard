@@ -4,24 +4,38 @@ const { searchParams } = new URL(window.location.href);
 const authToken = searchParams.get("auth_token");
 const chainId = searchParams.get("chain_id");
 const tokenAddress = searchParams.get("token_address");
+const hasVerificationLink = Boolean(authToken && chainId && tokenAddress);
 
 const logDiv = document.getElementById("log");
 const verifyButton = document.getElementById("verify-btn");
+const addressElement = document.getElementById("address");
+const verificationView = document.querySelector(".verification-view");
 verifyButton.addEventListener("click", handleVerify, false);
 
+if (hasVerificationLink) {
+  document.body.classList.add("verification-mode");
+  verificationView.hidden = false;
+}
+
+function setStatus(message, state = "info") {
+  logDiv.textContent = message;
+  logDiv.dataset.state = state;
+}
+
 async function verify() {
-  // if any of the required parameters are missing, show an error message
-  if (!authToken || !chainId || !tokenAddress) {
-    logDiv.style.color = "red";
-    logDiv.innerHTML =
-      "⮾ Invalid link! Please use the link provided by the DisGuard bot";
+  if (!hasVerificationLink) {
+    setStatus(
+      "Invalid link! Please use the link provided by the DisGuard bot",
+      "error"
+    );
     return;
   }
 
   if (!window.ethereum) {
-    logDiv.style.color = "#ffc107";
-    logDiv.innerHTML =
-      "⚠ Please use a Web3 browser like MetaMask to connect your wallet";
+    setStatus(
+      "Install or open a Web3 wallet such as MetaMask to continue.",
+      "warning"
+    );
     return;
   }
 
@@ -30,14 +44,10 @@ async function verify() {
       method: "eth_requestAccounts"
     });
 
-    document.getElementById(
-      "address"
-    ).innerHTML = `Your wallet address: <strong>${address}</strong>`;
+    addressElement.textContent = `Connected wallet: ${address}`;
 
     const provider = new ethers.BrowserProvider(window.ethereum);
     const signer = await provider.getSigner();
-
-    // update sign message with tokenaddress and chainid
 
     const message = [
       `Welcome to DisGuard. This site is requesting your signature to verify your wallet for checking the balance of the token ${tokenAddress} on chainId ${chainId}`,
@@ -49,8 +59,7 @@ async function verify() {
 
     const signature = await signer.signMessage(message);
 
-    logDiv.innerHTML =
-      "ⓘ Please wait while we authorize your request... We've sent out our highly trained monkeys to get the job done. They're currently working on it, so just sit back and relax for a moment! 🐒🍌";
+    setStatus("Checking your token balance and assigning your Discord role…");
 
     const data = { token: authToken, address, message, signature };
     const response = await fetch("/verify", {
@@ -62,14 +71,15 @@ async function verify() {
     const result = await response.json();
 
     if (response.ok && result.code === "ok" && result.message === "Success") {
-      logDiv.style.color = "green";
-      logDiv.innerHTML =
-        "✔ Verification successful! You can now close this tab and return to Discord.";
+      setStatus(
+        "Verification successful! You can now close this tab and return to Discord.",
+        "success"
+      );
     } else {
-      logDiv.style.color = "red";
-      logDiv.innerHTML = `⮾ Verification failed! ${
-        result.message || "Unknown error"
-      }`;
+      setStatus(
+        `Verification failed: ${result.message || "Unknown error"}`,
+        "error"
+      );
     }
   } catch (err) {
     console.error("Failed to verify wallet:", err);
@@ -77,18 +87,16 @@ async function verify() {
       err.message.length > 95
         ? err.message.substring(0, 95) + "..."
         : err.message;
-    logDiv.style.color = "red";
-    logDiv.innerHTML = `⮾ Something went wrong! ${truncatedErrorMessage}`;
+    setStatus(`Something went wrong: ${truncatedErrorMessage}`, "error");
   }
 }
 
 function handleVerify() {
-  logDiv.style.color = "#333";
-  logDiv.innerHTML = "ⓘ Please wait while we verify your wallet...";
+  setStatus("Please wait while we verify your wallet...");
   verifyButton.disabled = true;
-  verifyButton.innerHTML = "🛡️ Verifying...";
+  verifyButton.textContent = "Verifying…";
   verify().finally(() => {
     verifyButton.disabled = false;
-    verifyButton.innerHTML = "🛡️ Verify Wallet";
+    verifyButton.textContent = "Verify wallet";
   });
 }

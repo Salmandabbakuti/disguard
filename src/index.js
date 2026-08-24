@@ -33,7 +33,7 @@ client.on(Events.GuildCreate, (guild) => {
 client.on(Events.GuildDelete, (guild) => {
   logger.info("Bot removed from guild:", guild.name);
   //delete the guild from the db
-  db.orm.public.ServerConfig.where({ guildId: guild.id })
+  db.ServerConfig.where({ guildId: guild.id })
     .delete()
     .catch((err) => {
       logger.error("Failed to delete server config", err);
@@ -43,7 +43,7 @@ client.on(Events.GuildDelete, (guild) => {
 client.on(Events.GuildMemberAdd, async (member) => {
   logger.info(`${member.user.tag} joined the server: ${member.guild.name}`);
   //get starthere channel from server config table
-  const serverConfig = await db.orm.public.ServerConfig.where({
+  const serverConfig = await db.ServerConfig.where({
     guildId: member.guild.id
   }).first();
   if (!serverConfig) {
@@ -81,7 +81,7 @@ client.on(Events.MessageCreate, async (msg) => {
     `Message received in ${msg.guild.name} from ${msg.author.tag}: ${msg.content}`
   );
 
-  const serverConfig = await db.orm.public.ServerConfig.where({
+  const serverConfig = await db.ServerConfig.where({
     guildId: msg.guild.id
   }).first();
 
@@ -220,7 +220,7 @@ async function handleSetServerConfig(interaction) {
 async function handleGetServerConfig(interaction) {
   // acknowledge the command and defer the reply to give time for processing
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-  const serverConfig = await db.orm.public.ServerConfig.where({
+  const serverConfig = await db.ServerConfig.where({
     guildId: interaction.guildId
   }).first();
 
@@ -262,7 +262,7 @@ async function handleGetServerConfig(interaction) {
 async function handleVerifyCommand(interaction) {
   // acknowledge the command and defer the reply to give time for processing
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-  const serverConfig = await db.orm.public.ServerConfig.where({
+  const serverConfig = await db.ServerConfig.where({
     guildId: interaction.guildId
   }).first();
   if (!serverConfig) {
@@ -322,7 +322,7 @@ async function saveServerConfig(guildId, serverConfig) {
     roleId,
     webhookUrl
   } = serverConfig;
-  await db.orm.public.ServerConfig.upsert({
+  await db.ServerConfig.upsert({
     conflictOn: { guildId },
     update: {
       rpcUrl,

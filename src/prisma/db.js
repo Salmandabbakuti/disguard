@@ -16,4 +16,4 @@ db.connect()
     logger.error("Unable to connect database", err);
   });
 
-module.exports = db;
+module.exports = db.orm.public;

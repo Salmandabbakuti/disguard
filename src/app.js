@@ -46,6 +46,7 @@ app.post("/verify", async (req, res) => {
 
   const { token, address, message, signature } = req.body;
   let guildId;
+  let serverConfig; // reusing it for error handling in catch block
 
   try {
     const decodedToken = jwt.verify(token, JWT_SECRET);
@@ -62,7 +63,7 @@ app.post("/verify", async (req, res) => {
         .send({ code: "Unauthorized", message: "Invalid wallet signature" });
     }
 
-    const serverConfig = await db.orm.public.ServerConfig.where({
+    serverConfig = await db.ServerConfig.where({
       guildId
     }).first();
     if (!serverConfig) {
@@ -139,16 +140,9 @@ app.post("/verify", async (req, res) => {
         .json({ code: "Unauthorized", message: err.message });
     }
 
-    db.orm.public.ServerConfig.where({ guildId })
-      .first()
-      .then((serverConfig) => {
-        postDataToWebhook(serverConfig?.webhookUrl, {
-          content: `DisGuard - Attention Required: Internal Server Error while verifying user: ${err}`
-        });
-      })
-      .catch((error) => {
-        logger.error("Failed to get server config on verifying user", error);
-      });
+    postDataToWebhook(serverConfig?.webhookUrl, {
+      content: `DisGuard - Attention Required: Internal Server Error while verifying user: ${err}`
+    });
 
     return res
       .status(500)
