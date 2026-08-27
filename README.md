@@ -70,16 +70,16 @@ DisGuard facilitates secure and gated exclusive access to server channels for us
 
 ```bash
 # Sync the local schema to database
-npx prisma@next db init
+npx prisma db init
 
 # Generate the contract and types
-npx prisma@next contract emit
+npx prisma contract emit
 
 # Verify and Sign the contract to the database
-npx prisma@next db sign
+npx prisma db sign
 
 # Update database schema and contract only if you make any changes to the contract.prisma file(e.g adding new models or changing existing models)
-npx prisma@next db update
+npx prisma db update
 ```
 
 8. Run the bot using `npm start`.
@@ -106,6 +106,8 @@ If you encounter any issues with the bot, please do the following:
 ### v1.5.0
 
 - Migrating from Prisma 7 to Prisma 8
+- Fixed discord bot interaction timeout issue by defering reply imeediately and then sending the response after processing the request
+- Modularized the bot code and express apis into separate modules for better maintainability and scalability
 
 ### v1.4.0
 
