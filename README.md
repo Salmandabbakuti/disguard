@@ -66,7 +66,21 @@ DisGuard facilitates secure and gated exclusive access to server channels for us
 
 6. Install the dependencies using `npm install`.
 
-7. Sync the local schema to database by running `npx prisma db push` in the root directory
+7. Run the following commands to set up the database and generate the contract and types:
+
+```bash
+# Sync the local schema to database
+npx prisma db init
+
+# Generate the contract and types
+npx prisma contract emit
+
+# Verify and Sign the contract to the database
+npx prisma db sign
+
+# Update database schema and contract only if you make any changes to the contract.prisma file(e.g adding new models or changing existing models)
+npx prisma db update
+```
 
 8. Run the bot using `npm start`.
 
@@ -88,6 +102,12 @@ If you encounter any issues with the bot, please do the following:
 4. Check the logs for any error messages
 
 ## Change Log
+
+### v1.5.0
+
+- Migrating from Prisma 7 to Prisma 8
+- Fixed discord bot interaction timeout issue by defering reply imeediately and then sending the response after processing the request
+- Modularized the bot code and express apis into separate modules for better maintainability and scalability
 
 ### v1.4.0
 

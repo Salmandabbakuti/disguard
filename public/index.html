@@ -1,154 +1,440 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Token-gated Discord access, without manual role checks." />
+  <title>DisGuard — Token-gated Discord access</title>
   <script type="module" src="index.js"></script>
-  <title>DisGuard - Token Gated Discord Community Management</title>
   <style>
+    /* Product landing and verification state */
+    :root {
+      color-scheme: dark;
+      --background: #0b1117;
+      --surface: #131c24;
+      --surface-strong: #1a2832;
+      --text: #eef4f5;
+      --muted: #99aab3;
+      --border: #293944;
+      --primary: #72d4bc;
+      --primary-hover: #9ae6d2;
+      --success: #72d4bc;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: sans-serif, Helvetica, Arial;
-      background-color: #fff;
       margin: 0;
-      padding: 0;
-      color: #333;
-      text-align: center;
+      background: var(--background);
+      color: var(--text);
+      font-family: "Avenir Next", Avenir, "Helvetica Neue", sans-serif;
     }
 
-    .hero {
-      background-color: #002f6c;
-      color: #fff;
-      padding: 20px 10px;
-      text-align: center;
-    }
-
-    .hero h2 {
-      font-size: 36px;
-      margin-bottom: 20px;
-    }
-
-    .hero p {
-      font-size: 18px;
-      margin-bottom: 20px;
-    }
-
-    .button-group {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-    }
-
-    .button-group a {
-      text-decoration: none;
-    }
-
-    .button-group button {
-      background-color: #fff;
-      color: #002f6c;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 30px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-
-    .button-group button:hover {
-      background-color: #e3e6ea;
-    }
-
-    #verify-btn {
-      background-color: #0070f3;
-      width: 150px;
-      color: #fff;
-      border: 1px solid #0070f3;
-      margin: 5px;
-      padding: 10px;
-      border-radius: 50px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-
-    #verify-btn:hover {
-      background-color: #0056b3;
+    a {
+      color: inherit;
     }
 
     .container {
-      padding: 20px;
-      margin: 80px auto;
-      max-width: 900px;
-      background-color: white;
-      border-radius: 15px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
+      width: min(1160px, calc(100% - 64px));
+      margin: auto;
     }
 
-    #log {
-      margin-top: 30px;
+    .nav {
+      display: flex;
+      min-height: 88px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--text);
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: 0;
+      text-decoration: none;
+    }
+
+    .brand::before {
+      content: "";
+      width: 9px;
+      height: 9px;
+      border: 3px solid var(--primary);
+      border-radius: 2px;
+      transform: rotate(45deg);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+    }
+
+    .nav-links a:first-child {
+      color: var(--muted);
+      font-size: 0.9rem;
+      text-decoration: none;
+    }
+
+    .nav-links a:first-child:hover {
+      color: var(--text);
+    }
+
+    .button {
+      display: inline-flex;
+      min-height: 44px;
+      align-items: center;
+      justify-content: center;
+      padding: 0 17px;
+      border: 1px solid transparent;
+      border-radius: 5px;
+      background: var(--primary);
+      color: #09201d;
+      font: inherit;
+      font-size: 0.9rem;
+      font-weight: 750;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background-color 150ms ease, transform 150ms ease;
+    }
+
+    .button:hover {
+      background: var(--primary-hover);
+    }
+
+    .button.secondary {
+      border-color: var(--border);
+      color: var(--text);
+      background: transparent;
+    }
+
+    .button.secondary:hover {
+      background: var(--surface);
+    }
+
+    .button:disabled {
+      cursor: wait;
+      opacity: 0.7;
+      transform: none;
+    }
+
+    .button:focus-visible,
+    a:focus-visible {
+      outline: 3px solid var(--primary-hover);
+      outline-offset: 3px;
+    }
+
+    .hero {
+      display: block;
+      max-width: 760px;
+      padding: 110px 0 120px;
+    }
+
+    .hero>header {
+      max-width: 680px;
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--primary);
+      font-size: 0.73rem;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2 {
+      margin: 0;
+      font-weight: 700;
+      letter-spacing: -0.045em;
+    }
+
+    h1 {
+      max-width: 700px;
+      margin-bottom: 25px;
+      font-size: clamp(3rem, 6vw, 5.6rem);
+      line-height: 0.98;
+    }
+
+    .lead {
+      max-width: 600px;
+      color: #c1cdd1;
+      font-size: 1.14rem;
+      line-height: 1.65;
+    }
+
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 11px;
+    }
+
+    .capabilities {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 24px;
+      margin-top: 31px;
+      padding: 0;
+      color: #b4c1c5;
+      font-size: 0.85rem;
+      list-style: none;
+    }
+
+    .capabilities li::before {
+      color: var(--primary);
+    }
+
+    .section {
+      padding: 94px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .section-header {
+      max-width: 620px;
+      margin-bottom: 42px;
+    }
+
+    h2 {
+      margin-bottom: 12px;
+      font-size: clamp(2.35rem, 4vw, 4rem);
+      line-height: 0.98;
+    }
+
+    .section-header p:last-child,
+    .steps span:last-child {
+      color: var(--muted);
+    }
+
+    .steps li {
+      display: grid;
+      grid-template-columns: 66px minmax(180px, 0.7fr) 1.3fr;
+      gap: 24px;
+      align-items: baseline;
+      padding: 25px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .steps {
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+
+    .steps li:last-child {
+      border-bottom: 1px solid var(--border);
+    }
+
+    .step-number {
+      color: var(--primary);
+    }
+
+    code {
+      border-color: var(--border);
+      background: #18252d;
+      color: var(--primary-hover);
+    }
+
+    .closing {
+      padding: 105px 0 120px;
     }
 
     footer {
-      background-color: #002f6c;
-      color: white;
-      padding: 2px;
-      position: fixed;
-      width: 100%;
-      bottom: 0;
-      text-align: center;
+      padding: 23px 0 38px;
+      border-top: 1px solid var(--border);
+      font-size: 0.8rem;
     }
 
-    @media (max-width: 768px) {
-      .hero h2 {
-        font-size: 28px;
+    .verification-view {
+      display: none;
+      place-items: stretch;
+      padding: 0;
+    }
+
+    .verification-view:not([hidden]) {
+      display: grid;
+    }
+
+    .verify-card {
+      width: 100%;
+      align-self: center;
+      padding: clamp(32px, 6vw, 56px);
+      border: 1px solid var(--border);
+      border-top: 2px solid var(--primary);
+      border-radius: 4px;
+      background: var(--surface);
+      color: var(--text);
+      text-align: left;
+    }
+
+    .verify-card h1 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      color: var(--text);
+      font-size: clamp(2.5rem, 5vw, 4rem);
+    }
+
+    .verify-card>p:not(#address):not(#log) {
+      color: #c5d1cc;
+    }
+
+    .verify-card .button {
+      width: 100%;
+      margin: 12px 0 16px;
+    }
+
+    #address {
+      color: #b5ebdc;
+    }
+
+    #log {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      color: #c5d1cc;
+    }
+
+    #log[data-state="success"] {
+      color: #8ce0bd;
+    }
+
+    #log[data-state="error"] {
+      color: #ffb3a2;
+    }
+
+    #log[data-state="warning"] {
+      color: #f6d58e;
+    }
+
+    @media (max-width: 800px) {
+      .container {
+        width: min(100% - 32px, 600px);
       }
 
-      .hero p {
-        font-size: 16px;
+      .hero {
+        grid-template-columns: 1fr;
+        gap: 36px;
+        min-height: auto;
+        padding: 75px 0 86px;
       }
 
-      .button-group {
-        flex-direction: column;
-        gap: 10px;
-      }
+    }
 
-      .button-group button {
-        width: 80%;
-      }
+    .verification-mode main>.hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      width: 100%;
+      min-height: calc(100vh - 150px);
+      max-width: 680px;
+      margin-inline: auto;
+      padding: 64px 0;
+      align-items: center;
+    }
+
+    .verification-mode .hero>header,
+    .verification-mode main>.section,
+    .verification-mode .closing {
+      display: none;
+    }
+
+    .verification-mode .verification-view {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .verification-mode .verify-card {
+      width: 100%;
+      max-width: 680px;
+      padding: clamp(32px, 6vw, 56px);
     }
   </style>
 </head>
 
 <body>
-  <section class="hero">
-    <h2>DisGuard</h2>
-    <p>DisGuard allows you to gate Discord channels to certain users who hold a certain amount of NFT tokens or
-      ERC20 tokens on any EVM-compatible chain. Install and configure it on any Discord server with your own tokens and
-      roles.</p>
-    <div class="button-group">
-      <a href="https://discord.com/oauth2/authorize?client_id=1300440657931800598" target="_blank"
-        rel="noopener noreferrer">
-        <button>⬇️ Install on Discord</button>
-      </a>
+  <header class="container nav">
+    <a class="brand" href="/">DisGuard</a>
+    <nav class="nav-links">
       <a href="https://github.com/Salmandabbakuti/disguard?tab=readme-ov-file#disguard" target="_blank"
-        rel="noopener noreferrer">
-        <button>📃 View Documentation</button>
-      </a>
-    </div>
-  </section>
+        rel="noopener noreferrer">Documentation</a>
+      <a class="button" href="https://discord.com/oauth2/authorize?client_id=1300440657931800598" target="_blank"
+        rel="noopener noreferrer">Add to Discord</a>
+    </nav>
+  </header>
 
-  <section class="container">
-    <button id="verify-btn">🛡️ Verify Wallet</button>
-    <p id="address"></p>
-    <div id="log">
-      ⓘ Hey there! Are you ready to get verified? This doesn't trigger any transaction or fees.
-      Let's do this, ser!👋
-    </div>
-  </section>
+  <main class="container">
+    <section class="hero" aria-labelledby="hero-title">
+      <header>
+        <p class="eyebrow">Token-gated Discord access</p>
+        <h1 id="hero-title">Token-gated roles for Discord.</h1>
+        <p class="lead">DisGuard checks ERC-20 or ERC-721 holdings on your chosen EVM-compatible chain and assigns a
+          Discord role when a member meets your balance requirement.</p>
+        <p class="actions">
+          <a class="button" href="https://discord.com/oauth2/authorize?client_id=1300440657931800598" target="_blank"
+            rel="noopener noreferrer">Add DisGuard to Discord</a>
+          <a class="button secondary" href="#how-it-works">See the setup</a>
+        </p>
+        <ul class="capabilities">
+          <li>ERC-20 and ERC-721</li>
+          <li>Any EVM-compatible chain</li>
+          <li>Signature only, no gas</li>
+        </ul>
+      </header>
 
-  <footer>
-    <h5>&copy; 2026 DisGuard</h5>
-  </footer>
+      <section class="verification-view" hidden aria-labelledby="verify-title">
+        <article class="verify-card">
+          <p class="eyebrow">Discord verification</p>
+          <h2 id="verify-title">Verify your wallet.</h2>
+          <p>Connect the wallet that holds the required token, then sign a message to prove you own it. This does not
+            create a transaction or cost gas.</p>
+          <button class="button" id="verify-btn" type="button">Verify wallet</button>
+          <p id="address" aria-live="polite"></p>
+          <p id="log" data-state="info" role="status">We will check your balance against this server’s requirement and
+            assign its Discord role if you qualify.</p>
+        </article>
+      </section>
+    </section>
+
+    <section class="section" id="how-it-works" aria-labelledby="steps-title">
+      <header class="section-header">
+        <p class="eyebrow">How it works</p>
+        <h2 id="steps-title">Three steps from setup to access.</h2>
+        <p>Configure the rule in Discord. Members prove wallet ownership. DisGuard checks the balance and assigns the
+          role.</p>
+      </header>
+      <ol class="steps">
+        <li><span class="step-number">01</span><strong>Admin: configure the rule</strong><span>Install DisGuard on your
+            Discord server, move its bot role above the gated role in Server Settings → Roles, then run
+            <code>/set-serverconfig</code> to configure the RPC URL, token address, minimum balance, start channel, and
+            role.</span></li>
+        <li><span class="step-number">02</span><strong>Member: prove ownership</strong><span>Run <code>/verify</code>
+            in the configured start channel. Open the link, connect a wallet, and sign a message. No transaction is
+            sent and no gas is charged.</span></li>
+        <li><span class="step-number">03</span><strong>DisGuard: check and assign</strong><span>DisGuard verifies the
+            signature, checks the wallet’s ERC-20 or ERC-721 balance through the configured RPC, and assigns the
+            Discord role when the minimum is met. That role unlocks the gated channels.</span></li>
+      </ol>
+    </section>
+
+    <section class="closing" aria-labelledby="closing-title">
+      <p class="eyebrow">Built for your community</p>
+      <h2 id="closing-title">Give your holders the access they earned.</h2>
+      <a class="button" href="https://discord.com/oauth2/authorize?client_id=1300440657931800598" target="_blank"
+        rel="noopener noreferrer">Add to Discord</a>
+    </section>
+
+  </main>
+
+  <footer class="container">© 2026 DisGuard · Token gated access for Discord servers.</footer>
 </body>
 
 </html>

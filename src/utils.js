@@ -1,4 +1,10 @@
-const { REST, Routes } = require("discord.js");
+const {
+  Client,
+  GatewayIntentBits,
+  Partials,
+  REST,
+  Routes
+} = require("discord.js");
 const fetch = require("node-fetch");
 const { createLogger, format, transports } = require("winston");
 const {
@@ -10,6 +16,19 @@ const {
 // Construct and prepare an instance of the Discord REST module
 const rest = new REST().setToken(DISCORD_BOT_TOKEN);
 
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildPresences
+  ],
+  partials: [Partials.GuildMember, Partials.Message, Partials.Channel]
+});
+
+client.login(DISCORD_BOT_TOKEN);
+
 const { combine, timestamp, printf, colorize, errors } = format;
 
 // Log format
@@ -18,7 +37,9 @@ const logFormat = printf(({ level, message, timestamp, ...meta }) => {
   const extraArgs = extraArgsArr
     ?.map((arg) => (typeof arg === "object" ? JSON.stringify(arg) : arg)) // Handle objects and other types
     .join(" ");
-  return `${timestamp} [${level}]: ${message} ${extraArgs || ""}`;
+  // little tweak to hide timestamp in prod envs
+  // since, prod envs show timestamp by default in their logs, so no need to show it again in the log message
+  return `${process.env.LOG_LEVEL == "silly" ? timestamp : ""} [${level}]: ${message} ${extraArgs || ""}`;
 });
 
 // Logger configuration
@@ -143,6 +164,7 @@ const postDataToWebhook = (webhookUrl, data) => {
 };
 
 module.exports = {
+  client,
   deployCommands,
   logger,
   postDataToWebhook

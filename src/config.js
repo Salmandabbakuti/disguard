@@ -1,6 +1,7 @@
 require("dotenv").config();
 
 module.exports = {
+  DATABASE_URL: process.env.DATABASE_URL,
   DISCORD_BOT_TOKEN: process.env.DISCORD_BOT_TOKEN,
   DISCORD_BOT_APPLICATION_ID: process.env.DISCORD_BOT_APPLICATION_ID,
   APP_URL: process.env.APP_URL,
