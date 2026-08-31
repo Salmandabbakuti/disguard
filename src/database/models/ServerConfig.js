@@ -3,8 +3,8 @@ const sequelize = require("../connector");
 
 const schema = {
   id: {
-    type: DataTypes.UUID,
-    defaultValue: DataTypes.UUIDV4,
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
     primaryKey: true
   },
   guildId: {
