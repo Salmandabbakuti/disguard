@@ -33,9 +33,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'60f3672f0e83d319e0305a3f497281ffed5dd1af3d7348b81804911b60603d50'>;
+  StorageHashBase<'1ecf582227cb651cc4c9e82b97ec225e04a0d8a769b2ace5fbec70b693459dab'>;
 export type ExecutionHash =
-  ExecutionHashBase<'9a22382f218951e5e33ac26189d88996f9942e24af04844868666721342952e9'>;
+  ExecutionHashBase<'e38d7ee7b465683b98851cbb48271386e9c55125df23b62102a89642fc630214'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -250,8 +250,6 @@ export type FieldOutputTypes = {
       readonly rpcUrl: CodecTypes['pg/text@1']['output'];
       readonly tokenAddress: CodecTypes['pg/text@1']['output'];
       readonly minimumBalance: CodecTypes['pg/float8@1']['output'];
-      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     };
   };
 };
@@ -266,15 +264,12 @@ export type FieldInputTypes = {
       readonly rpcUrl: CodecTypes['pg/text@1']['input'];
       readonly tokenAddress: CodecTypes['pg/text@1']['input'];
       readonly minimumBalance: CodecTypes['pg/float8@1']['input'];
-      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
-      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
     };
   };
 };
 export type StorageColumnTypes = {
   readonly public: {
     readonly serverConfig: {
-      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly guildId: CodecTypes['pg/text@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly minimumBalance: CodecTypes['pg/float8@1']['output'];
@@ -282,7 +277,6 @@ export type StorageColumnTypes = {
       readonly rpcUrl: CodecTypes['pg/text@1']['output'];
       readonly startChannelId: CodecTypes['pg/text@1']['output'];
       readonly tokenAddress: CodecTypes['pg/text@1']['output'];
-      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly webhookUrl: CodecTypes['pg/text@1']['output'];
     };
   };
@@ -290,7 +284,6 @@ export type StorageColumnTypes = {
 export type StorageColumnInputTypes = {
   readonly public: {
     readonly serverConfig: {
-      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly guildId: CodecTypes['pg/text@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly minimumBalance: CodecTypes['pg/float8@1']['input'];
@@ -298,7 +291,6 @@ export type StorageColumnInputTypes = {
       readonly rpcUrl: CodecTypes['pg/text@1']['input'];
       readonly startChannelId: CodecTypes['pg/text@1']['input'];
       readonly tokenAddress: CodecTypes['pg/text@1']['input'];
-      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly webhookUrl: CodecTypes['pg/text@1']['input'];
     };
   };
@@ -367,17 +359,6 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/float8@1';
                   readonly nullable: false;
                 };
-                readonly createdAt: {
-                  readonly nativeType: 'timestamptz';
-                  readonly codecId: 'pg/timestamptz-temporal@1';
-                  readonly nullable: false;
-                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
-                };
-                readonly updatedAt: {
-                  readonly nativeType: 'timestamptz';
-                  readonly codecId: 'pg/timestamptz-temporal@1';
-                  readonly nullable: false;
-                };
               };
               primaryKey: { readonly columns: readonly ['id'] };
               uniques: readonly [{ readonly columns: readonly ['guildId'] }];
@@ -438,20 +419,6 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/float8@1' };
               };
-              readonly createdAt: {
-                readonly nullable: false;
-                readonly type: {
-                  readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamptz-temporal@1';
-                };
-              };
-              readonly updatedAt: {
-                readonly nullable: false;
-                readonly type: {
-                  readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamptz-temporal@1';
-                };
-              };
             };
             readonly relations: Record<string, never>;
             readonly storage: {
@@ -466,8 +433,6 @@ type ContractBase = Omit<
                 readonly rpcUrl: { readonly column: 'rpcUrl' };
                 readonly tokenAddress: { readonly column: 'tokenAddress' };
                 readonly minimumBalance: { readonly column: 'minimumBalance' };
-                readonly createdAt: { readonly column: 'createdAt' };
-                readonly updatedAt: { readonly column: 'updatedAt' };
               };
             };
           };
@@ -505,15 +470,6 @@ type ContractBase = Omit<
             readonly column: 'id';
           };
           readonly onCreate: { readonly kind: 'generator'; readonly id: 'uuidv4' };
-        },
-        {
-          readonly ref: {
-            readonly namespace: 'public';
-            readonly table: 'serverConfig';
-            readonly column: 'updatedAt';
-          };
-          readonly onCreate: { readonly kind: 'generator'; readonly id: 'instantNow' };
-          readonly onUpdate: { readonly kind: 'generator'; readonly id: 'instantNow' };
         },
       ];
     };

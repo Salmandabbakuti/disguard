@@ -15,13 +15,6 @@
         "models": {
           "ServerConfig": {
             "fields": {
-              "createdAt": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/timestamptz-temporal@1",
-                  "kind": "scalar"
-                }
-              },
               "guildId": {
                 "nullable": false,
                 "type": {
@@ -71,13 +64,6 @@
                   "kind": "scalar"
                 }
               },
-              "updatedAt": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/timestamptz-temporal@1",
-                  "kind": "scalar"
-                }
-              },
               "webhookUrl": {
                 "nullable": false,
                 "type": {
@@ -89,9 +75,6 @@
             "relations": {},
             "storage": {
               "fields": {
-                "createdAt": {
-                  "column": "createdAt"
-                },
                 "guildId": {
                   "column": "guildId"
                 },
@@ -113,9 +96,6 @@
                 "tokenAddress": {
                   "column": "tokenAddress"
                 },
-                "updatedAt": {
-                  "column": "updatedAt"
-                },
                 "webhookUrl": {
                   "column": "webhookUrl"
                 }
@@ -135,15 +115,6 @@
           "table": {
             "serverConfig": {
               "columns": {
-                "createdAt": {
-                  "codecId": "pg/timestamptz-temporal@1",
-                  "default": {
-                    "expression": "now()",
-                    "kind": "function"
-                  },
-                  "nativeType": "timestamptz",
-                  "nullable": false
-                },
                 "guildId": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -179,11 +150,6 @@
                   "nativeType": "text",
                   "nullable": false
                 },
-                "updatedAt": {
-                  "codecId": "pg/timestamptz-temporal@1",
-                  "nativeType": "timestamptz",
-                  "nullable": false
-                },
                 "webhookUrl": {
                   "codecId": "pg/text@1",
                   "default": {
@@ -215,10 +181,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "60f3672f0e83d319e0305a3f497281ffed5dd1af3d7348b81804911b60603d50"
+    "storageHash": "1ecf582227cb651cc4c9e82b97ec225e04a0d8a769b2ace5fbec70b693459dab"
   },
   "execution": {
-    "executionHash": "9a22382f218951e5e33ac26189d88996f9942e24af04844868666721342952e9",
+    "executionHash": "e38d7ee7b465683b98851cbb48271386e9c55125df23b62102a89642fc630214",
     "mutations": {
       "defaults": [
         {
@@ -228,21 +194,6 @@
           },
           "ref": {
             "column": "id",
-            "namespace": "public",
-            "table": "serverConfig"
-          }
-        },
-        {
-          "onCreate": {
-            "id": "instantNow",
-            "kind": "generator"
-          },
-          "onUpdate": {
-            "id": "instantNow",
-            "kind": "generator"
-          },
-          "ref": {
-            "column": "updatedAt",
             "namespace": "public",
             "table": "serverConfig"
           }

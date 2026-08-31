@@ -1,0 +1,100 @@
+[
+  {
+    "id": "schema.public",
+    "label": "Create schema \"public\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [],
+    "execute": [
+      {
+        "description": "Create schema \"public\"",
+        "sql": "CREATE SCHEMA IF NOT EXISTS \"public\"",
+        "params": []
+      }
+    ],
+    "postcheck": []
+  },
+  {
+    "id": "table.serverConfig",
+    "label": "Create table \"serverConfig\"",
+    "summary": "Creates table \"serverConfig\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "serverConfig"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"serverConfig\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"serverConfig\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"serverConfig\"",
+        "sql": "CREATE TABLE \"public\".\"serverConfig\" (\n  \"guildId\" text NOT NULL,\n  \"id\" text NOT NULL,\n  \"minimumBalance\" float8 NOT NULL,\n  \"roleId\" text NOT NULL,\n  \"rpcUrl\" text NOT NULL,\n  \"startChannelId\" text NOT NULL,\n  \"tokenAddress\" text NOT NULL,\n  \"webhookUrl\" text DEFAULT '' NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"serverConfig\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"serverConfig\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.serverConfig.serverConfig_guildId_key",
+    "label": "Add unique constraint on \"serverConfig\" (guildId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "serverConfig_guildId_key",
+        "table": "serverConfig"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"serverConfig_guildId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "serverConfig_guildId_key",
+          "public",
+          "\"public\".\"serverConfig\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"serverConfig_guildId_key\"",
+        "sql": "ALTER TABLE \"public\".\"serverConfig\" ADD CONSTRAINT \"serverConfig_guildId_key\" UNIQUE (\"guildId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"serverConfig_guildId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "serverConfig_guildId_key",
+          "public",
+          "\"public\".\"serverConfig\""
+        ]
+      }
+    ]
+  }
+]
