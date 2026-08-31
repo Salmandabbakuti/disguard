@@ -5,14 +5,12 @@
   "private": true,
   "scripts": {
     "dev": "node --watch --watch-preserve-output src/index.js",
-    "start": "node src/index.js",
-    "contract:emit": "npx prisma@next contract emit"
+    "start": "node src/index.js"
   },
   "keywords": [],
   "author": "Salman Dabbakuti",
   "license": "ISC",
   "dependencies": {
-    "@prisma/orm-postgres": "^8.0.0-rc.8",
     "discord.js": "^14.27.0",
     "dotenv": "^17.4.2",
     "ethers": "^6.17.0",
@@ -20,9 +18,9 @@
     "express-rate-limit": "^8.6.2",
     "jsonwebtoken": "^9.0.3",
     "node-fetch": "^2.7.0",
+    "pg": "^8.23.0",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.37.8",
     "winston": "^3.19.0"
-  },
-  "devDependencies": {
-    "prisma": "^8.0.0-rc.12"
   }
 }

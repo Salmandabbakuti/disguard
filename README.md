@@ -66,21 +66,7 @@ DisGuard facilitates secure and gated exclusive access to server channels for us
 
 6. Install the dependencies using `npm install`.
 
-7. Run the following commands to set up the database and generate the contract and types:
-
-```bash
-# Sync the local schema to database
-npx prisma db init
-
-# Generate the contract and types
-npx prisma contract emit
-
-# Verify and Sign the contract to the database
-npx prisma db sign
-
-# Update database schema and contract only if you make any changes to the contract.prisma file(e.g adding new models or changing existing models)
-npx prisma db update
-```
+7. Run the database migrations using `npx sequelize-cli db:migrate`.
 
 8. Run the bot using `npm start`.
 
@@ -102,6 +88,10 @@ If you encounter any issues with the bot, please do the following:
 4. Check the logs for any error messages
 
 ## Change Log
+
+## v1.6.0
+
+- Migrating from Prisma to Sequelize ORM for better maintainability and scalability of the bot codebase.
 
 ### v1.5.0
 
@@ -155,7 +145,7 @@ If you encounter any issues with the bot, please do the following:
 
 - [Discord](https://discord.com/) - A free communications app that lets you share voice, video, and text chat with friends, game communities, and developers.
 - [Discord.js](https://discord.js.org/) - A powerful Node.js module that allows you to interact with the Discord API very easily.
-- [Prisma](https://www.prisma.io/) - Next-generation ORM for Node.js & TypeScript | PostgreSQL, MySQL, MariaDB, SQL Server, SQLite, MongoDB and CockroachDB
+- [Sequelize](https://sequelize.org/) - Modern TypeScript and Node.js ORM for Oracle, Postgres, MySQL, MariaDB, SQLite and SQL Server, and more.
 - [Postgres](https://www.postgresql.org/) - A powerful, open source object-relational database system.
 - [Ethers.js](https://docs.ethers.io/v5/) - A library that allows you to interact with the Ethereum blockchain.
 - [Express.js](https://expressjs.com/) - A minimal and flexible Node.js web application framework that provides a robust set of features for web and mobile applications.
