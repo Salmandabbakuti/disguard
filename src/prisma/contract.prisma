@@ -1,5 +1,5 @@
 model ServerConfig {
-  id             String @id @default(uuid())
+  id             Int    @id @default(autoincrement())
   guildId        String @unique
   startChannelId String
   webhookUrl     String @default("")

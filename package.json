@@ -1,6 +1,6 @@
 {
   "name": "disguard-server",
-  "version": "1.6.2",
+  "version": "1.6.3",
   "description": "DisGuard Server",
   "private": true,
   "scripts": {
@@ -17,9 +17,8 @@
     "dotenv": "^17.4.2",
     "ethers": "^6.17.0",
     "express": "^5.2.1",
-    "express-rate-limit": "^8.6.2",
+    "express-rate-limit": "^8.7.0",
     "jsonwebtoken": "^9.0.3",
-    "node-fetch": "^2.7.0",
     "winston": "^3.19.0"
   },
   "devDependencies": {

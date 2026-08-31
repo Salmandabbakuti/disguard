@@ -5,7 +5,6 @@ const {
   REST,
   Routes
 } = require("discord.js");
-const fetch = require("node-fetch");
 const { createLogger, format, transports } = require("winston");
 const {
   DISCORD_BOT_TOKEN,
