@@ -8,7 +8,7 @@ const {
   verifyMessage
 } = require("ethers");
 const jwt = require("jsonwebtoken");
-const db = require("./prisma/db");
+const ServerConfig = require("./database/models/ServerConfig");
 const { client, logger, postDataToWebhook } = require("./utils");
 const { JWT_SECRET } = require("./config");
 
@@ -63,9 +63,11 @@ app.post("/verify", async (req, res) => {
         .send({ code: "Unauthorized", message: "Invalid wallet signature" });
     }
 
-    serverConfig = await db.ServerConfig.where({
-      guildId
-    }).first();
+    serverConfig = await ServerConfig.findOne({
+      where: {
+        guildId
+      }
+    });
     if (!serverConfig) {
       return res.status(503).json({
         code: "Service Unavailable",
