@@ -127,8 +127,6 @@ const handleVerify = async (req: Request) => {
 };
 
 const server = serve({
-  development: true,
-  port: 3000,
   routes: {
     "/": index,
     "/verify": index,
