@@ -1,5 +1,25 @@
-const { DataTypes } = require("sequelize");
-const sequelize = require("../connector");
+import {
+  DataTypes,
+  type InferAttributes,
+  type InferCreationAttributes,
+  type CreationOptional,
+  Model
+} from "sequelize";
+import sequelize from "../connector";
+
+export class ServerConfig extends Model<
+  InferAttributes<ServerConfig>,
+  InferCreationAttributes<ServerConfig>
+> {
+  declare id: CreationOptional<number>;
+  declare guildId: string;
+  declare startChannelId: string;
+  declare roleId: string;
+  declare rpcUrl: string;
+  declare tokenAddress: string;
+  declare minimumBalance: number;
+  declare webhookUrl: CreationOptional<string>;
+}
 
 const schema = {
   id: {
@@ -38,7 +58,9 @@ const schema = {
   }
 };
 
-const ServerConfig = sequelize.define("ServerConfig", schema, {
+ServerConfig.init(schema, {
+  sequelize,
+  modelName: "ServerConfig",
   timestamps: true,
   freezeTableName: true
 });
@@ -52,4 +74,4 @@ const ServerConfig = sequelize.define("ServerConfig", schema, {
 //     console.error("Error creating or updating ServerConfig table:", error);
 //   });
 
-module.exports = ServerConfig;
+export default ServerConfig;

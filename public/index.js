@@ -1,5 +1,3 @@
-import { ethers } from "https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.min.js";
-
 const { searchParams } = new URL(window.location.href);
 const authToken = searchParams.get("auth_token");
 const chainId = searchParams.get("chain_id");
@@ -62,11 +60,13 @@ async function verify() {
     setStatus("Checking your token balance and assigning your Discord role…");
 
     const data = { token: authToken, address, message, signature };
-    const response = await fetch("/verify", {
+    const response = await fetch("/api/verify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
     });
+
+    console.log("Verification response:", response);
 
     const result = await response.json();
 

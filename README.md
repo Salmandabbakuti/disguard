@@ -64,11 +64,11 @@ DisGuard facilitates secure and gated exclusive access to server channels for us
 
 5. Update the .env file with the `DATABASE_URL`, `APP_URL`, and other necessary details.
 
-6. Install the dependencies using `npm install`.
+6. Install [Bun](https://bun.com/docs/quickstart), then install dependencies using `bun install`.
 
-7. Run the database migrations using `npx sequelize-cli db:migrate`.
+7. Run the database migrations using `bunx sequelize-cli db:migrate`.
 
-8. Run the bot using `npm start`.
+8. Validate types with `bun run typecheck`, then start the Bun server and Discord bot using `bun start`. During development, use `bun dev` for watch mode and frontend hot reloading.
 
 9. Copy Install Link from Installation Tab in Application Settings and open it in the browser to add the bot to your server.
 
@@ -88,6 +88,13 @@ If you encounter any issues with the bot, please do the following:
 4. Check the logs for any error messages
 
 ## Change Log
+
+## v1.7.0
+
+- Migrate codebase from Node.js to Bun runtime for improved performance and efficiency.
+- Migrated the HTTP API and static client from Express to Bun's native full-stack server (`Bun.serve()`), HTML routes, and built-in JSON `Request`/`Response` APIs.
+- Replaced Node/npm runtime commands with Bun install, development, start, and production-build commands.
+- Removed Express, its rate-limit middleware, and dotenv; Bun loads `.env` files automatically.
 
 ## v1.6.0
 
@@ -148,8 +155,7 @@ If you encounter any issues with the bot, please do the following:
 - [Sequelize](https://sequelize.org/) - Modern TypeScript and Node.js ORM for Oracle, Postgres, MySQL, MariaDB, SQLite and SQL Server, and more.
 - [Postgres](https://www.postgresql.org/) - A powerful, open source object-relational database system.
 - [Ethers.js](https://docs.ethers.io/v5/) - A library that allows you to interact with the Ethereum blockchain.
-- [Express.js](https://expressjs.com/) - A minimal and flexible Node.js web application framework that provides a robust set of features for web and mobile applications.
-- [Winston](https://github.com/winstonjs/winston) - A logger for just about everything. Simple and universal logging library for nodejs.
+- [Bun](https://bun.com/) - JavaScript runtime, package manager, bundler, and native HTTP server used for the full-stack application.
 
 ## Safety
 

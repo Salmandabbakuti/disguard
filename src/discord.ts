@@ -1,49 +1,70 @@
-const {
+import {
+  Client,
+  GatewayIntentBits,
+  Partials,
   Events,
   ButtonBuilder,
   ActionRowBuilder,
   ButtonStyle,
   MessageFlags,
-  ChannelType
-} = require("discord.js");
-const { isAddress, JsonRpcProvider } = require("ethers");
-const jwt = require("jsonwebtoken");
-const ServerConfig = require("./database/models/ServerConfig");
-const {
-  client,
-  deployCommands,
-  logger,
-  postDataToWebhook
-} = require("./utils");
-const app = require("./app");
+  ChannelType,
+  type ChatInputCommandInteraction,
+  type GuildMember,
+  type SendableChannels
+} from "discord.js";
+import { isAddress, JsonRpcProvider } from "ethers";
+import jwt from "jsonwebtoken";
+import ServerConfig from "./database/models/ServerConfig";
+import { deployCommands, postDataToWebhook } from "./utils";
+import config from "./config";
 
-const { APP_URL, JWT_SECRET } = require("./config");
+interface ServerConfigInput {
+  rpcUrl: string;
+  tokenAddress: string;
+  webhookUrl: string | null;
+  minimumBalance: number;
+  startChannelId: string;
+  roleId: string;
+}
+
+export const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildPresences
+  ],
+  partials: [Partials.GuildMember, Partials.Message, Partials.Channel]
+});
+
+void client.login(config.DISCORD_BOT_TOKEN);
 
 // Event listeners for the Discord bot
 client.once(Events.ClientReady, () =>
-  logger.info(`Logged in as ${client.user.tag}`)
+  console.info(`Logged in as ${client.user!.tag}`)
 );
 
 client.on(Events.GuildCreate, (guild) => {
-  logger.info("Bot added to guild:", guild.name);
+  console.info("Bot added to guild:", guild.name);
   //deploy slash commands on the joined guild
   deployCommands(guild.id);
 });
 
 client.on(Events.GuildDelete, (guild) => {
-  logger.info("Bot removed from guild:", guild.name);
+  console.info("Bot removed from guild:", guild.name);
   //delete the guild from the db
-  ServerConfig.destroy({
+  void ServerConfig.destroy({
     where: {
       guildId: guild.id
     }
-  }).catch((err) => {
-    logger.error("Failed to delete server config", err);
+  }).catch((error: unknown) => {
+    console.error("Failed to delete server config", error);
   });
 });
 
 client.on(Events.GuildMemberAdd, async (member) => {
-  logger.info(`${member.user.tag} joined the server: ${member.guild.name}`);
+  console.info(`${member.user.tag} joined the server: ${member.guild.name}`);
   //get starthere channel from server config table
   const serverConfig = await ServerConfig.findOne({
     where: {
@@ -51,7 +72,7 @@ client.on(Events.GuildMemberAdd, async (member) => {
     }
   });
   if (!serverConfig) {
-    logger.warn(
+    console.warn(
       `Server not configured for ${member.guild.name}. Skipping welcome message for new joiner.`
     );
     return;
@@ -60,7 +81,7 @@ client.on(Events.GuildMemberAdd, async (member) => {
     serverConfig.startChannelId
   );
   if (!startHereChannel) {
-    logger.warn(
+    console.warn(
       `Configured start channel not found for ${member.guild.name}. Skipping welcome message for new joiner.`
     );
     postDataToWebhook(serverConfig?.webhookUrl, {
@@ -69,25 +90,31 @@ client.on(Events.GuildMemberAdd, async (member) => {
     return;
   }
 
-  startHereChannel.send({
+  (startHereChannel as SendableChannels).send({
     content: `Welcome, <@${member.id}>. We hope you brought pizza! Please type \`/verify\` command to verify your wallet and get access to our exclusive channels and perks!`
   });
 });
 
 client.on(Events.GuildMemberRemove, (member) => {
-  logger.info(`${member.user.tag} left the server: ${member.guild.name}`);
+  console.info(`${member.user.tag} left the server: ${member.guild.name}`);
 });
 
 client.on(Events.MessageCreate, async (msg) => {
-  if (msg.author.bot || msg.system || msg.channel.type === ChannelType.DM)
+  const guild = msg.guild;
+  if (
+    msg.author.bot ||
+    msg.system ||
+    msg.channel.type === ChannelType.DM ||
+    !guild
+  )
     return;
-  logger.info(
-    `Message received in ${msg.guild.name} from ${msg.author.tag}: ${msg.content}`
+  console.info(
+    `Message received in ${guild.name} from ${msg.author.tag}: ${msg.content}`
   );
 
   const serverConfig = await ServerConfig.findOne({
     where: {
-      guildId: msg.guild.id
+      guildId: guild.id
     }
   });
 
@@ -109,11 +136,11 @@ client.on(Events.MessageCreate, async (msg) => {
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
-  logger.info(
-    `Interaction /${interaction.commandName} received in ${interaction.guild.name} from ${interaction.user.tag}`
-  );
-
   if (!interaction.isChatInputCommand()) return;
+
+  console.info(
+    `Interaction /${interaction.commandName} received in ${interaction.guild!.name} from ${interaction.user.tag}`
+  );
 
   switch (interaction.commandName) {
     case "ping":
@@ -129,7 +156,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
       await handleVerifyCommand(interaction);
       break;
     default:
-      interaction.reply({
+      void interaction.reply({
         content: "Unknown command",
         flags: MessageFlags.Ephemeral
       });
@@ -137,14 +164,14 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 });
 
-async function handlePingCommand(interaction) {
+async function handlePingCommand(interaction: ChatInputCommandInteraction) {
   await interaction.reply({
     content: "pong!",
     flags: MessageFlags.Ephemeral
   });
 }
 
-async function handleSetServerConfig(interaction) {
+async function handleSetServerConfig(interaction: ChatInputCommandInteraction) {
   const {
     rpcUrl,
     tokenAddress,
@@ -159,16 +186,13 @@ async function handleSetServerConfig(interaction) {
 
   if (!isServerOwner(interaction)) {
     return interaction.editReply({
-      content: "You are not authorized to configure the server.",
-      flags: MessageFlags.Ephemeral
+      content: "You are not authorized to configure the server."
     });
   }
 
   if (!isAddress(tokenAddress)) {
     return interaction.editReply({
-      content:
-        "Invalid token address. Please provide a valid Ethereum address.",
-      flags: MessageFlags.Ephemeral
+      content: "Invalid token address. Please provide a valid Ethereum address."
     });
   }
 
@@ -178,8 +202,7 @@ async function handleSetServerConfig(interaction) {
   ) {
     return interaction.editReply({
       content:
-        "Invalid discord webhook URL. It should start with `https://discord.com/api/webhooks/`",
-      flags: MessageFlags.Ephemeral
+        "Invalid discord webhook URL. It should start with `https://discord.com/api/webhooks/`"
     });
   }
 
@@ -193,7 +216,7 @@ async function handleSetServerConfig(interaction) {
   };
 
   try {
-    await saveServerConfig(interaction.guildId, serverConfig);
+    await saveServerConfig(interaction.guildId!, serverConfig);
     const savedServerConfigSettings = await getServerConfigSettings(
       serverConfig,
       true
@@ -208,35 +231,32 @@ async function handleSetServerConfig(interaction) {
       outro;
 
     await interaction.editReply({
-      content: message,
-      flags: MessageFlags.Ephemeral
+      content: message
     });
-  } catch (err) {
-    logger.error("Failed to save server config", err);
+  } catch (error: unknown) {
+    console.error("Failed to save server config", error);
     await interaction.editReply({
-      content: "Failed to save server config. Please try again later.",
-      flags: MessageFlags.Ephemeral
+      content: "Failed to save server config. Please try again later."
     });
-    postDataToWebhook(serverConfig?.webhookUrl, {
-      content: `DisGuard - Attention Required: Internal Server Error while setting server config: ${err}`
+    postDataToWebhook(serverConfig.webhookUrl ?? undefined, {
+      content: `DisGuard - Attention Required: Internal Server Error while setting server config: ${error}`
     });
   }
 }
 
-async function handleGetServerConfig(interaction) {
+async function handleGetServerConfig(interaction: ChatInputCommandInteraction) {
   // acknowledge the command and defer the reply to give time for processing
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
   const serverConfig = await ServerConfig.findOne({
     where: {
-      guildId: interaction.guildId
+      guildId: interaction.guildId!
     }
   });
 
   if (!serverConfig) {
     return interaction.editReply({
       content:
-        "Server not configured. Ask server admin to configure the server with `/set-serverconfig` command",
-      flags: MessageFlags.Ephemeral
+        "Server not configured. Ask server admin to configure the server with `/set-serverconfig` command"
     });
   }
 
@@ -251,35 +271,32 @@ async function handleGetServerConfig(interaction) {
       "Here are the server's current configuration settings:\n\n" +
       serverConfigSettings.join("\n");
     await interaction.editReply({
-      content: message,
-      flags: MessageFlags.Ephemeral
+      content: message
     });
-  } catch (err) {
-    logger.error("Failed to get server config", err);
+  } catch (error: unknown) {
+    console.error("Failed to get server config", error);
     await interaction.editReply({
-      content: "Failed to get server config. Please try again later.",
-      flags: MessageFlags.Ephemeral
+      content: "Failed to get server config. Please try again later."
     });
     // send error message to webhook if available
     postDataToWebhook(serverConfig?.webhookUrl, {
-      content: `DisGuard - Attention Required: Internal Server Error while getting server config: ${err}`
+      content: `DisGuard - Attention Required: Internal Server Error while getting server config: ${error}`
     });
   }
 }
 
-async function handleVerifyCommand(interaction) {
+async function handleVerifyCommand(interaction: ChatInputCommandInteraction) {
   // acknowledge the command and defer the reply to give time for processing
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
   const serverConfig = await ServerConfig.findOne({
     where: {
-      guildId: interaction.guildId
+      guildId: interaction.guildId!
     }
   });
   if (!serverConfig) {
     return interaction.editReply({
       content:
-        "Server not configured. Ask server admin to configure the server with `/set-serverconfig` command",
-      flags: MessageFlags.Ephemeral
+        "Server not configured. Ask server admin to configure the server with `/set-serverconfig` command"
     });
   }
 
@@ -288,42 +305,48 @@ async function handleVerifyCommand(interaction) {
       {
         configId: serverConfig.id,
         guildId: interaction.guildId,
-        memberId: interaction.member.id
+        memberId: (interaction.member as GuildMember).id
       },
-      JWT_SECRET,
+      config.JWT_SECRET!,
       { expiresIn: "5m" } // 5 minutes
     );
     await sendVerifyCommandReply(interaction, serverConfig, jwtToken);
-  } catch (err) {
-    logger.error("Failed to handle verify command", err);
+  } catch (error: unknown) {
+    console.error("Failed to handle verify command", error);
     await interaction.editReply({
-      content: "Failed to send verification request. Please try again later.",
-      flags: MessageFlags.Ephemeral
+      content: "Failed to send verification request. Please try again later."
     });
     // send error message to webhook if available
     postDataToWebhook(serverConfig?.webhookUrl, {
-      content: `DisGuard - Attention Required: Internal Server Error while handling verify command: ${err}`
+      content: `DisGuard - Attention Required: Internal Server Error while handling verify command: ${error}`
     });
   }
 }
 
 // handler utils
-function getConfigOptions(interaction) {
+function getConfigOptions(
+  interaction: ChatInputCommandInteraction
+): ServerConfigInput {
   return {
-    rpcUrl: interaction.options.getString("rpcurl"),
-    tokenAddress: interaction.options.getString("tokenaddress"),
+    rpcUrl: interaction.options.getString("rpcurl")!,
+    tokenAddress: interaction.options.getString("tokenaddress")!,
     webhookUrl: interaction.options.getString("webhookurl"),
-    minimumBalance: interaction.options.getInteger("minimumbalance"),
-    startChannelId: interaction.options.getChannel("startchannel").id,
-    roleId: interaction.options.getRole("role").id
+    minimumBalance: interaction.options.getInteger("minimumbalance")!,
+    startChannelId: interaction.options.getChannel("startchannel")!.id,
+    roleId: interaction.options.getRole("role")!.id
   };
 }
 
-function isServerOwner(interaction) {
-  return interaction.member.user.id === interaction.guild.ownerId;
+function isServerOwner(interaction: ChatInputCommandInteraction): boolean {
+  return (
+    (interaction.member as GuildMember).user.id === interaction.guild!.ownerId
+  );
 }
 
-async function saveServerConfig(guildId, serverConfig) {
+async function saveServerConfig(
+  guildId: string,
+  serverConfig: ServerConfigInput
+): Promise<void> {
   const {
     rpcUrl,
     tokenAddress,
@@ -343,7 +366,10 @@ async function saveServerConfig(guildId, serverConfig) {
   });
 }
 
-async function getServerConfigSettings(serverConfig, isOwner) {
+async function getServerConfigSettings(
+  serverConfig: ServerConfig | ServerConfigInput,
+  isOwner: boolean
+): Promise<string[]> {
   const {
     rpcUrl,
     tokenAddress,
@@ -373,7 +399,11 @@ async function getServerConfigSettings(serverConfig, isOwner) {
   return settings;
 }
 
-async function sendVerifyCommandReply(interaction, serverConfig, jwtToken) {
+async function sendVerifyCommandReply(
+  interaction: ChatInputCommandInteraction,
+  serverConfig: ServerConfig,
+  jwtToken: string
+): Promise<void> {
   const { rpcUrl, tokenAddress, minimumBalance } = serverConfig;
   const provider = new JsonRpcProvider(rpcUrl);
   const chain = await provider.getNetwork();
@@ -392,7 +422,7 @@ async function sendVerifyCommandReply(interaction, serverConfig, jwtToken) {
     .setLabel("Verify with Wallet")
     .setStyle(ButtonStyle.Link)
     .setURL(
-      `${APP_URL}/verify?token_address=${tokenAddress}&chain_id=${chain?.chainId}&auth_token=${jwtToken}`
+      `${config.APP_URL}/verify?token_address=${tokenAddress}&chain_id=${chain?.chainId}&auth_token=${jwtToken}`
     );
 
   const tokenExplorerButton = new ButtonBuilder()
@@ -401,19 +431,13 @@ async function sendVerifyCommandReply(interaction, serverConfig, jwtToken) {
     .setURL(
       `https://blockscan.com/token/${tokenAddress}?chainId=${chain?.chainId}`
     );
-  const actionRow = new ActionRowBuilder().addComponents(
+  const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
     verifyWithWalletButton,
     tokenExplorerButton
   );
 
   await interaction.editReply({
     content: message,
-    components: [actionRow],
-    flags: MessageFlags.Ephemeral
+    components: [actionRow]
   });
 }
-
-const port = process.env.PORT || 3000;
-app.listen(port, () =>
-  logger.info(`🔥 Server listening at http://localhost:${port} 🚀`)
-);

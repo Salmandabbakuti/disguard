@@ -1,7 +1,6 @@
-const { Sequelize } = require("sequelize");
-const { DATABASE_URL } = require("../config");
+import { Sequelize } from "sequelize";
 
-const sequelize = new Sequelize(DATABASE_URL, {
+const sequelize = new Sequelize(process.env.DATABASE_URL!, {
   dialect: "postgres"
 });
 
@@ -14,4 +13,4 @@ sequelize
     console.error("Unable to connect to the database:", error);
   });
 
-module.exports = sequelize;
+export default sequelize;
