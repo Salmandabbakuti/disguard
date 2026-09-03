@@ -6,7 +6,7 @@ import { postDataToWebhook, hasRequiredTokenBalance } from "./utils";
 import config from "./config";
 import type { SendableChannels } from "discord.js";
 import { client } from "./discord";
-import index from "../public/index.html";
+import index from "../client/index.html";
 
 type VerifyRequestBody = {
   token: string;
