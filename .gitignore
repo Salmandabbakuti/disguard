@@ -9,6 +9,20 @@ bin-release/
 node_modules/
 yarn.lock
 
+# output
+out
+dist
+*.tgz
+
+# code coverage
+coverage
+*.lcov
+
+# logs
+logs
+_.log
+report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
+
 # Executables
 *.swf
 *.air
