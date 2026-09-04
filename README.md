@@ -89,6 +89,10 @@ If you encounter any issues with the bot, please do the following:
 
 ## Change Log
 
+## v1.7.2
+
+- Moved client from plain HTML to React with Bun server(Fullstack server) for better maintainability and scalability of the client codebase.
+
 ## v1.7.0
 
 - Migrate codebase from Node.js to Bun runtime for improved performance and efficiency.

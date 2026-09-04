@@ -1,7 +1,7 @@
 {
-  "name": "disguard-server",
-  "version": "1.7.0",
-  "description": "DisGuard Server",
+  "name": "disguard-server-bun-react",
+  "version": "1.7.2",
+  "description": "DisGuard Server with Bun + React",
   "private": true,
   "keywords": [],
   "author": "Salman Dabbakuti",
@@ -30,7 +30,7 @@
     "@types/bun": "^1.4.0",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.6",
+    "@types/react-dom": "^19.2.7",
     "typescript": "^7.0.2"
   }
 }

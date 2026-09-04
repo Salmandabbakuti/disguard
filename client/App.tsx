@@ -26,8 +26,7 @@ export function App() {
   const tokenAddress = params.get("token_address");
   const [log, setLog] = useState({
     type: "info",
-    message:
-      "We will check your balance against this server's requirement and assign its Discord role if you qualify."
+    message: ""
   });
   const [address, setAddress] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
@@ -148,7 +147,7 @@ export function App() {
             target="_blank"
             rel="noopener noreferrer"
           >
-            Documentation
+            Docs
           </a>
           <a
             className="button"
@@ -184,7 +183,8 @@ export function App() {
                 {address}
               </p>
               <p className="log" data-state={log.type} role="status">
-                {log.message}
+                {log.message ||
+                  "We will check your balance against this server's requirement and assign its Discord role if you qualify."}
               </p>
             </article>
           </section>
@@ -285,7 +285,8 @@ export function App() {
       </main>
 
       <footer className="container">
-        © 2026 DisGuard · Token gated access for Discord servers.
+        ©{new Date().getFullYear()} DisGuard · Token gated access for Discord
+        servers.
       </footer>
     </div>
   );
