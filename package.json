@@ -1,7 +1,7 @@
 {
-  "name": "disguard-server",
-  "version": "1.7.0",
-  "description": "DisGuard Server",
+  "name": "disguard-server-bun-react",
+  "version": "1.7.2",
+  "description": "DisGuard Server with Bun + React",
   "private": true,
   "keywords": [],
   "author": "Salman Dabbakuti",
@@ -11,9 +11,9 @@
     "bun": ">=1.2.17"
   },
   "scripts": {
-    "dev": "bun --watch src/index.ts",
-    "start": "bun src/index.ts",
-    "build": "bun build --target=bun --production --outdir=dist src",
+    "dev": "bun --hot src/index.ts",
+    "build": "bun build ./client/index.html --outdir=dist --sourcemap --target=browser --minify --define:process.env.NODE_ENV='\"production\"' --env='BUN_PUBLIC_*'",
+    "start": "NODE_ENV=production bun src/index.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -22,11 +22,15 @@
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.23.0",
     "pg-hstore": "^2.3.4",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
     "sequelize": "^6.37.8"
   },
   "devDependencies": {
     "@types/bun": "^1.4.0",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
     "typescript": "^7.0.2"
   }
 }
