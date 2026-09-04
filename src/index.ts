@@ -64,15 +64,23 @@ const handleVerify = async (req: Request) => {
     const { rpcUrl, tokenAddress, minimumBalance, startChannelId, roleId } =
       serverConfig;
 
+    // check if member has role already, if yes, return success
+    const guild = client.guilds.cache.get(guildId)!;
+    const member = await guild.members.fetch(memberId);
+    const hasRole = member.roles.cache.has(roleId);
+    if (hasRole) {
+      console.info(
+        `${member.user.tag} already has the gated role on server: ${guild.name}`
+      );
+      return Response.json({ code: "ok", message: "Success" });
+    }
+
     const hasRequiredBalance = await hasRequiredTokenBalance({
       token: tokenAddress,
       account: address,
       rpcUrl,
       minimumBalance
     });
-
-    const guild = client.guilds.cache.get(guildId)!;
-    const member = await guild.members.fetch(memberId);
     const startHereChannel = guild.channels.cache.get(
       startChannelId
     )! as SendableChannels;

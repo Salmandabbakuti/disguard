@@ -300,6 +300,18 @@ async function handleVerifyCommand(interaction: ChatInputCommandInteraction) {
     });
   }
 
+  // check if member has role already, if yes, return message
+  const { guildId, roleId } = serverConfig;
+  const guild = client.guilds.cache.get(guildId)!;
+  const member = await guild.members.fetch(interaction.user.id);
+  const hasRole = member.roles.cache.has(roleId);
+  if (hasRole) {
+    return interaction.editReply({
+      content:
+        "You are already verified and have the gated role. You can access the gated channels."
+    });
+  }
+
   try {
     const jwtToken = jwt.sign(
       {
