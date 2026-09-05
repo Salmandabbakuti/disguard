@@ -1,17 +1,11 @@
 import { useState } from "react";
+import { BrowserProvider } from "ethers";
 import "./App.css";
 
 declare global {
   interface Window {
     ethereum?: {
-      request: (args: { method: string }) => Promise<unknown>;
-    };
-    ethers?: {
-      BrowserProvider: new (provider: NonNullable<Window["ethereum"]>) => {
-        getSigner: () => Promise<{
-          signMessage: (message: string) => Promise<string>;
-        }>;
-      };
+      request: (args: { method: string }) => Promise<string[]>;
     };
   }
 }
@@ -55,19 +49,11 @@ export function App() {
       const accounts = await window.ethereum.request({
         method: "eth_requestAccounts"
       });
-      const [walletAddress] = accounts as string[];
+      const [walletAddress] = accounts;
       if (!walletAddress) throw new Error("No wallet account was selected.");
 
       setAddress(`Connected wallet: ${walletAddress}`);
-      if (!window.ethers) {
-        setLog({
-          type: "error",
-          message:
-            "Ethers.js library is not loaded. Please check your browser console for errors."
-        });
-        return;
-      }
-      const provider = new window.ethers.BrowserProvider(window.ethereum);
+      const provider = new BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
       const message = [
         `Welcome to DisGuard. This site is requesting your signature to verify your wallet for checking the balance of the token ${tokenAddress} on chainId ${chainId}`,
@@ -94,7 +80,6 @@ export function App() {
           signature
         })
       });
-      console.log("Verification response:", response);
 
       const result = (await response.json()) as {
         code?: string;
