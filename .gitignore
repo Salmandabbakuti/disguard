@@ -34,3 +34,5 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 # should NOT be excluded as they contain compiler settings and other important
 # information for Eclipse / Flash Builder.
 .DS_Store
+dist/
+.env

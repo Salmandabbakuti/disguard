@@ -1,7 +1,7 @@
 import { serve } from "bun";
 import { verifyMessage, JsonRpcProvider } from "ethers";
 import jwt from "jsonwebtoken";
-import ServerConfig from "./database/models/ServerConfig";
+import db from "./prisma/db";
 import { postDataToWebhook, hasRequiredTokenBalance } from "./utils";
 import config from "./config";
 import type { SendableChannels } from "discord.js";
@@ -28,7 +28,7 @@ const handleVerify = async (req: Request) => {
     );
   const { token, address, message, signature } = body as VerifyRequestBody;
   let guildId: string;
-  let serverConfig: ServerConfig | null = null; // reusing it for error handling in catch block
+  let serverConfig = null; // reusing it for error handling in catch block
 
   try {
     const decodedToken = jwt.verify(token, config.JWT_SECRET) as jwt.JwtPayload;
@@ -46,11 +46,7 @@ const handleVerify = async (req: Request) => {
       );
     }
 
-    serverConfig = await ServerConfig.findOne({
-      where: {
-        guildId
-      }
-    });
+    serverConfig = await db.ServerConfig.first({ guildId });
     if (!serverConfig) {
       return Response.json(
         {
