@@ -1,12 +1,12 @@
 import { serve } from "bun";
 import { verifyMessage, JsonRpcProvider } from "ethers";
 import jwt from "jsonwebtoken";
-import ServerConfig from "./database/models/ServerConfig";
+import db from "./prisma/db";
 import { postDataToWebhook, hasRequiredTokenBalance } from "./utils";
 import config from "./config";
 import type { SendableChannels } from "discord.js";
-import { client } from "./discord";
-import index from "../client/index.html";
+import { client as discordClient } from "./discord";
+import homePage from "../client/index.html";
 
 type VerifyRequestBody = {
   token: string;
@@ -28,7 +28,7 @@ const handleVerify = async (req: Request) => {
     );
   const { token, address, message, signature } = body as VerifyRequestBody;
   let guildId: string;
-  let serverConfig: ServerConfig | null = null; // reusing it for error handling in catch block
+  let serverConfig = null; // reusing it for error handling in catch block
 
   try {
     const decodedToken = jwt.verify(token, config.JWT_SECRET) as jwt.JwtPayload;
@@ -46,11 +46,7 @@ const handleVerify = async (req: Request) => {
       );
     }
 
-    serverConfig = await ServerConfig.findOne({
-      where: {
-        guildId
-      }
-    });
+    serverConfig = await db.ServerConfig.first({ guildId });
     if (!serverConfig) {
       return Response.json(
         {
@@ -65,7 +61,7 @@ const handleVerify = async (req: Request) => {
       serverConfig;
 
     // check if member has role already, if yes, return success
-    const guild = client.guilds.cache.get(guildId)!;
+    const guild = discordClient.guilds.cache.get(guildId)!;
     const member = await guild.members.fetch(memberId);
     const hasRole = member.roles.cache.has(roleId);
     if (hasRole) {
@@ -136,8 +132,8 @@ const handleVerify = async (req: Request) => {
 
 const server = serve({
   routes: {
-    "/": index,
-    "/verify": index,
+    "/": homePage,
+    "/verify": homePage,
     "/api/verify": {
       POST: handleVerify
     }

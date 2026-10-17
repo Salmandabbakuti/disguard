@@ -14,7 +14,7 @@ import {
 } from "discord.js";
 import { isAddress, JsonRpcProvider } from "ethers";
 import jwt from "jsonwebtoken";
-import ServerConfig from "./database/models/ServerConfig";
+import db from "./prisma/db";
 import { deployCommands, postDataToWebhook } from "./utils";
 import config from "./config";
 
@@ -54,23 +54,20 @@ client.on(Events.GuildCreate, (guild) => {
 client.on(Events.GuildDelete, (guild) => {
   console.info("Bot removed from guild:", guild.name);
   //delete the guild from the db
-  void ServerConfig.destroy({
-    where: {
-      guildId: guild.id
-    }
-  }).catch((error: unknown) => {
-    console.error("Failed to delete server config", error);
-  });
+  void db.ServerConfig.where({ guildId: guild.id })
+    .delete()
+    .catch((error: unknown) => {
+      console.error("Failed to delete server config", error);
+    });
 });
 
 client.on(Events.GuildMemberAdd, async (member) => {
   console.info(`${member.user.tag} joined the server: ${member.guild.name}`);
   //get starthere channel from server config table
-  const serverConfig = await ServerConfig.findOne({
-    where: {
-      guildId: member.guild.id
-    }
+  const serverConfig = await db.ServerConfig.first({
+    guildId: member.guild.id
   });
+
   if (!serverConfig) {
     console.warn(
       `Server not configured for ${member.guild.name}. Skipping welcome message for new joiner.`
@@ -112,10 +109,8 @@ client.on(Events.MessageCreate, async (msg) => {
     `Message received in ${guild.name} from ${msg.author.tag}: ${msg.content}`
   );
 
-  const serverConfig = await ServerConfig.findOne({
-    where: {
-      guildId: guild.id
-    }
+  const serverConfig = await db.ServerConfig.first({
+    guildId: guild.id
   });
 
   if (!serverConfig)
@@ -247,10 +242,8 @@ async function handleSetServerConfig(interaction: ChatInputCommandInteraction) {
 async function handleGetServerConfig(interaction: ChatInputCommandInteraction) {
   // acknowledge the command and defer the reply to give time for processing
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-  const serverConfig = await ServerConfig.findOne({
-    where: {
-      guildId: interaction.guildId!
-    }
+  const serverConfig = await db.ServerConfig.first({
+    guildId: interaction.guildId!
   });
 
   if (!serverConfig) {
@@ -288,11 +281,10 @@ async function handleGetServerConfig(interaction: ChatInputCommandInteraction) {
 async function handleVerifyCommand(interaction: ChatInputCommandInteraction) {
   // acknowledge the command and defer the reply to give time for processing
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-  const serverConfig = await ServerConfig.findOne({
-    where: {
-      guildId: interaction.guildId!
-    }
+  const serverConfig = await db.ServerConfig.first({
+    guildId: interaction.guildId!
   });
+
   if (!serverConfig) {
     return interaction.editReply({
       content:
@@ -367,19 +359,31 @@ async function saveServerConfig(
     roleId,
     webhookUrl
   } = serverConfig;
-  await ServerConfig.upsert({
-    guildId,
-    rpcUrl,
-    tokenAddress,
-    minimumBalance,
-    startChannelId,
-    roleId,
-    webhookUrl: webhookUrl || ""
+
+  await db.ServerConfig.upsert({
+    conflictOn: { guildId },
+    update: {
+      rpcUrl,
+      tokenAddress,
+      minimumBalance,
+      startChannelId,
+      roleId,
+      webhookUrl: webhookUrl || ""
+    },
+    create: {
+      guildId,
+      rpcUrl,
+      tokenAddress,
+      minimumBalance,
+      startChannelId,
+      roleId,
+      webhookUrl: webhookUrl || ""
+    }
   });
 }
 
 async function getServerConfigSettings(
-  serverConfig: ServerConfig | ServerConfigInput,
+  serverConfig: ServerConfigInput,
   isOwner: boolean
 ): Promise<string[]> {
   const {
@@ -413,7 +417,7 @@ async function getServerConfigSettings(
 
 async function sendVerifyCommandReply(
   interaction: ChatInputCommandInteraction,
-  serverConfig: ServerConfig,
+  serverConfig: ServerConfigInput,
   jwtToken: string
 ): Promise<void> {
   const { rpcUrl, tokenAddress, minimumBalance } = serverConfig;

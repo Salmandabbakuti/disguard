@@ -270,8 +270,7 @@ export function App() {
       </main>
 
       <footer className="container">
-        ©{new Date().getFullYear()} DisGuard · Token gated access for Discord
-        servers.
+        ©{new Date().getFullYear()} DisGuard · v1.8.1
       </footer>
     </div>
   );
