@@ -1,14 +1,13 @@
 // use prisma-8
-
 model ServerConfig {
-  id             Int    @id @default(autoincrement())
-  guildId        String @unique
+  id             Int                        @id @default(autoincrement())
+  guildId        String                     @unique
   startChannelId String
-  webhookUrl     String @default("")
+  webhookUrl     String                     @default("")
   roleId         String
   rpcUrl         String
   tokenAddress   String
   minimumBalance Float
-  createdAt TimestamptzString @default(now())
-  updatedAt temporal.updatedAtString()
+  createdAt      TimestamptzString          @default(now())
+  updatedAt      temporal.updatedAtString()
 }

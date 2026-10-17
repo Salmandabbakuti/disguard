@@ -5,8 +5,8 @@ import db from "./prisma/db";
 import { postDataToWebhook, hasRequiredTokenBalance } from "./utils";
 import config from "./config";
 import type { SendableChannels } from "discord.js";
-import { client } from "./discord";
-import index from "../client/index.html";
+import { client as discordClient } from "./discord";
+import homePage from "../client/index.html";
 
 type VerifyRequestBody = {
   token: string;
@@ -61,7 +61,7 @@ const handleVerify = async (req: Request) => {
       serverConfig;
 
     // check if member has role already, if yes, return success
-    const guild = client.guilds.cache.get(guildId)!;
+    const guild = discordClient.guilds.cache.get(guildId)!;
     const member = await guild.members.fetch(memberId);
     const hasRole = member.roles.cache.has(roleId);
     if (hasRole) {
@@ -132,8 +132,8 @@ const handleVerify = async (req: Request) => {
 
 const server = serve({
   routes: {
-    "/": index,
-    "/verify": index,
+    "/": homePage,
+    "/verify": homePage,
     "/api/verify": {
       POST: handleVerify
     }
